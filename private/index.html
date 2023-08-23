@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Web-Engineering Endabgabe" />
+    <meta name="author" content="Stefan Höllwart" />
+    <title>Aktuelle Temperaturen</title>
+
+    <link rel="shortcut icon" href="img/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="img/favicon-2.ico" />
+
+    <!-- Bootstrap imports -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <!-- Custom styles for this template -->
+    <link href="./css/dashboard.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="current">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light p-4">
+        <div class="container-fluid">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav align-items-center">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/"
+                  >Aktuelles Wetter
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="/historical"
+                  >Historische Wetterdaten
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="/internal"
+                  >Wetterstationen (intere API)
+                </a>
+              </li>
+            </ul>
+            <ul class="navbar-nav ms-auto align-items-center">
+              <li class="nav-item">
+                <a class="nav-link" href="https://data.hub.zamg.ac.at">
+                  Datenquelle: GeoSphere Austria
+                </a>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link btn" @click="onLogout">Logout</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <main class="container min-vh-100">
+        <div class="row justify-content-center align-items-center mt-5">
+          <h2 class="col-auto text-center">
+            Aktuelles Wetter in ausgewählten Orten
+          </h2>
+          <button class="col-auto btn" @click="fetchTemps">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+        <div class="row justify-content-center">
+          <div class="card m-2 m-lg-5 p-0" style="width: 24rem">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Salzburg_Altstadt_vom_M%C3%B6nchsberg.jpg"
+              class="card-img card-image"
+              alt="Salzburg"
+            />
+            <div class="card-img-overlay text-white fw-bolder text-shadow">
+              <h5 class="card-title">Salzburg</h5>
+              <h6 class="card-subtitle mb-2 text-white">
+                Station Flughafen
+              </h6>
+              <p v-if="!Sbg.fetching" class="card-text">
+                {{Sbg.f.TL.name}}: {{Sbg.f.TL.data.at(0)}}{{Sbg.f.TL.unit}}
+                <br />{{Sbg.f.P.name}}: {{Sbg.f.P.data.at(0)}}{{Sbg.f.P.unit}}
+                <br />{{Sbg.f.RR.name}}:
+                {{Sbg.f.RR.data.at(0)}}{{Sbg.f.RR.unit}}
+              </p>
+              <div v-else class="row justify-content-center m-2">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card m-2 m-lg-5 p-0" style="width: 24rem">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/d/dd/Sttephanplatz%2C_Graben%2C_Vienna%2C_Austria.jpg"
+              class="card-img card-image"
+              alt="Wien"
+            />
+            <div class="card-img-overlay text-white fw-bolder text-shadow">
+              <h5 class="card-title">Wien</h5>
+              <h6 class="card-subtitle mb-2 text-white">
+                Station Wien-Innere Stadt
+              </h6>
+              <p v-if="!Vienna.fetching" class="card-text">
+                {{Vienna.f.TL.name}}:
+                {{Vienna.f.TL.data.at(0)}}{{Vienna.f.TL.unit}}
+                <br />{{Vienna.f.P.name}}:
+                {{Vienna.f.P.data.at(0)}}{{Vienna.f.P.unit}}
+                <br />{{Vienna.f.RR.name}}:
+                {{Vienna.f.RR.data.at(0)}}{{Vienna.f.RR.unit}}
+              </p>
+              <div v-else class="row justify-content-center m-2">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="card m-2 m-lg-5 p-0" style="width: 24rem">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/8/85/Innsbruck_-_Maria-Theresia-Stra%C3%9Fe4.jpg"
+              class="card-img card-image"
+              alt="Graz"
+            />
+            <div class="card-img-overlay text-white fw-bolder text-shadow">
+              <h5 class="card-title bg-transparent">Innsbruck</h5>
+              <h6 class="card-subtitle mb-2 text-white">
+                Station Universität
+              </h6>
+              <p v-if="!Innsbruck.fetching" class="card-text">
+                {{Innsbruck.f.TL.name}}:
+                {{Innsbruck.f.TL.data.at(0)}}{{Innsbruck.f.TL.unit}}
+                <br />{{Innsbruck.f.P.name}}:
+                {{Innsbruck.f.P.data.at(0)}}{{Innsbruck.f.P.unit}}
+                <br />{{Innsbruck.f.RR.name}}:
+                {{Innsbruck.f.RR.data.at(0)}}{{Innsbruck.f.RR.unit}}
+              </p>
+              <div v-else class="row justify-content-center m-2">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card m-2 m-lg-5 p-0" style="width: 24rem">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Austria_Graz_2022-08.jpg"
+              class="card-img card-image"
+              alt="Graz"
+            />
+            <div class="card-img-overlay text-white fw-bolder text-shadow">
+              <h5 class="card-title">Graz</h5>
+              <h6 class="card-subtitle mb-2 text-white">
+                Station Universität
+              </h6>
+              <p v-if="!Graz.fetching" class="card-text">
+                {{Graz.f.TL.name}}: {{Graz.f.TL.data.at(0)}}{{Graz.f.TL.unit}}
+                <br />{{Graz.f.P.name}}:
+                {{Graz.f.P.data.at(0)}}{{Graz.f.P.unit}}
+                <br />{{Graz.f.RR.name}}:
+                {{Graz.f.RR.data.at(0)}}{{Graz.f.RR.unit}}
+              </p>
+              <div v-else class="row justify-content-center m-2">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="bg-light text-muted mt-4">
+        <section class="p-4 text-center">
+          Datenquelle: GeoSphere Austria -
+          <a class="text-reset fw-bold" href="https://data.hub.zamg.ac.at">
+            https://data.hub.zamg.ac.at
+          </a>
+          <br />
+          Bildquellen: <br />
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Salzburg_Altstadt_vom_M%C3%B6nchsberg.jpg"
+            >Photo Salzburg: Andreas Praefcke</a
+          >,
+          <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>,
+          via Wikimedia Commons<br />
+
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Sttephanplatz,_Graben,_Vienna,_Austria.jpg"
+            >Photo Wien: Tupungato</a
+          >,
+          <a href="https://creativecommons.org/licenses/by/2.5">CC BY 2.5</a>,
+          via Wikimedia Commons<br />
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Innsbruck_-_Maria-Theresia-Stra%C3%9Fe4.jpg"
+            >Photo Innsbruck: Taxiarchos228</a
+          >, FAL, via Wikimedia Commons<br />
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Austria_Graz_2022-08.jpg"
+            >Photo Graz: Scotch Mist</a
+          >,
+          <a href="https://creativecommons.org/licenses/by-sa/4.0"
+            >CC BY-SA 4.0</a
+          >, via Wikimedia Commons
+        </section>
+        <div
+          class="text-center p-4"
+          style="background-color: rgba(0, 0, 0, 0.05)"
+        >
+          Website by Stefan Höllwart
+        </div>
+      </footer>
+    </div>
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="./js/feather.min.js"></script>
+    <script src="./js/chart.js"></script>
+  </body>
+
+  <!-- in dashboard.js place your personal JavaScript changes. -->
+  <script type="module" src="./js/dashboard2.js"></script>
+</html>

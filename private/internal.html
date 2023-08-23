@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Web-Engineering Endabgabe" />
+    <meta name="author" content="Stefan Höllwart" />
+    <title>Wetterstationen</title>
+
+    <link rel="shortcut icon" href="img/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="img/favicon-2.ico" />
+
+    <!-- Bootstrap imports -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Custom styles for this template -->
+    <link href="./css/dashboard.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="internal">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light p-4">
+        <div class="container-fluid">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav align-items-center">
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="/"
+                  >Aktuelles Wetter
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="/historical"
+                  >Historische Wetterdaten
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/internal"
+                  >Wetterstationen (intere API)
+                </a>
+              </li>
+            </ul>
+            <ul class="navbar-nav ms-auto align-items-center">
+              <li class="nav-item">
+                <a class="nav-link" href="https://data.hub.zamg.ac.at">
+                  Datenquelle: GeoSphere Austria
+                </a>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link btn" @click="onLogout">Logout</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <main class="container min-vh-100">
+        <h3 class="mt-4 mb-4">Get Stations</h3>
+
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Bundesland"
+            v-model="filter.state"
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="ID"
+            v-model="filter.id"
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="name"
+            v-model="filter.name"
+          />
+          <button class="btn btn-primary" @click="fetchStations">
+            Fetch Stations
+          </button>
+        </div>
+        <div>
+          <ul class="list-group overflow-scroll">
+            <li class="list-group-item" v-for="station in stations">
+              ID: "{{station.id}}" Bundesland: "{{station.state}}" Name:
+              "{{station.name}}"
+            </li>
+          </ul>
+        </div>
+
+        <h3 class="mt-4 mb-4">Add Station</h3>
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Bundesland"
+            v-model="add.state"
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="ID"
+            v-model="add.id"
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="name"
+            v-model="add.name"
+          />
+          <button class="btn btn-primary" @click="addStation">
+            Add Station
+          </button>
+        </div>
+        <div class="alert alert-danger" v-if="errMsg.add !==''" role="alert">
+          {{errMsg.add}}
+        </div>
+        <div
+          class="alert alert-success"
+          v-if="successMsg.add !==''"
+          role="alert"
+        >
+          {{successMsg.add}}
+        </div>
+
+        <h3 class="mt-4 mb-4">Update Station Name und/oder Bundesland</h3>
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="ID"
+            v-model="change.id"
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Bundesland"
+            v-model="change.state"
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="name"
+            v-model="change.name"
+          />
+          <button class="btn btn-primary" @click="updateStation">Update</button>
+        </div>
+        <div class="alert alert-danger" v-if="errMsg.change" role="alert">
+          {{errMsg.change}}
+        </div>
+        <div class="alert alert-success" v-if="successMsg.change" role="alert">
+          {{successMsg.change}}
+        </div>
+
+        <h3 class="mt-4 mb-4">Delete Station</h3>
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="ID"
+            v-model="del.id"
+          />
+          <button class="btn btn-primary" @click="deleteStation">Delete</button>
+        </div>
+        <div class="alert alert-danger" v-if="errMsg.del" role="alert">
+          {{errMsg.del}}
+        </div>
+        <div class="alert alert-success" v-if="successMsg.del" role="alert">
+          {{successMsg.del}}
+        </div>
+      </main>
+
+      <footer class="bg-light text-muted mt-4">
+        <section class="p-4 text-center">
+          Datenquelle: GeoSphere Austria -
+          <a class="text-reset fw-bold" href="https://data.hub.zamg.ac.at">
+            https://data.hub.zamg.ac.at
+          </a>
+        </section>
+        <div
+          class="text-center p-4"
+          style="background-color: rgba(0, 0, 0, 0.05)"
+        >
+          Website by Stefan Höllwart
+        </div>
+      </footer>
+    </div>
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="./js/feather.min.js"></script>
+    <script src="./js/chart.js"></script>
+
+    <!-- in dashboard.js place your personal JavaScript changes. -->
+    <script type="module" src="./js/internal.js"></script>
+  </body>
+</html>

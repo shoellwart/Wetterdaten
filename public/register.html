@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Web-Engineering Endabgabe" />
+    <meta name="author" content="Stefan Höllwart" />
+    <title>Login</title>
+
+    <link rel="shortcut icon" href="img/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="img/favicon-2.ico" />
+
+    <!-- Bootstrap imports -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <!-- Custom styles for this template -->
+    <link href="./css/dashboard.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="login">
+      <main class="container p-5">
+        <form class="mt-5" id="registerForm" @submit.prevent="registerFunc">
+          <h1>Registrieren</h1>
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input class="form-control" type="text" v-model="username" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" v-model="password" />
+          </div>
+          <div class="alert alert-danger" v-if="errMsg" role="alert">
+            {{errMsg}}
+          </div>
+          <div>
+            <a href="/login">Zum Login</a>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary mt-2"
+            form="registerForm"
+          >
+            Register
+          </button>
+        </form>
+      </main>
+    </div>
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="./js/login.js"></script>
+  </body>
+</html>
